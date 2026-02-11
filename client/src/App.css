@@ -1,0 +1,76 @@
+.app {
+  min-height: 100vh;
+  background: #11111b;
+  color: #cdd6f4;
+}
+
+.header {
+  text-align: center;
+  padding: 40px 20px 20px;
+}
+
+.header h1 {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #89b4fa, #cba6f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  color: #6c7086;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.main {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0;
+}
+
+.filters button {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #1e1e2e;
+  color: #6c7086;
+  border: 1px solid #313244;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filters button:hover {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+.filters button.active {
+  background: #89b4fa;
+  color: #11111b;
+  border-color: #89b4fa;
+}
+
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loading,
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: #6c7086;
+  font-size: 16px;
+}
