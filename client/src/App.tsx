@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Todo } from "./types/todo";
+import { type Todo } from "./types/todo";
 import { TodoItem } from "./components/TodoItem";
 import { AddTodo } from "./components/AddTodo";
 import "./App.css";
@@ -78,8 +78,7 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>Smart Todo</h1>
-        <p className="subtitle">Powered by Claude MCP</p>
+        <h1>Todo List</h1>
       </header>
 
       <main className="main">

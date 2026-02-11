@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "id": "b18f9516-73b4-490a-9d93-3ee193dd1845",
+    "title": "Need to do the groceries",
+    "completed": true,
+    "priority": "medium",
+    "tags": [],
+    "createdAt": "2026-02-11T23:13:38.650Z",
+    "updatedAt": "2026-02-11T23:13:58.798Z"
+  },
+  {
+    "id": "64d5912d-100a-4b88-bd72-dbb5ec30236a",
+    "title": "Need to find a job",
+    "completed": false,
+    "priority": "high",
+    "tags": [],
+    "createdAt": "2026-02-11T23:13:51.062Z",
+    "updatedAt": "2026-02-11T23:13:51.062Z"
+  },
+  {
+    "id": "be4f6097-ccfa-43ef-bf78-3bcc436597a6",
+    "title": "Make new projects",
+    "completed": false,
+    "priority": "medium",
+    "dueDate": "2026-02-28",
+    "tags": [],
+    "createdAt": "2026-02-11T23:14:33.824Z",
+    "updatedAt": "2026-02-11T23:14:33.824Z"
+  }
+]
