@@ -7,16 +7,28 @@ Smart Todo App with MCP integration. Claude can manage todos via MCP tools while
 - **Frontend**: React + TypeScript + Vite (port 5173)
 - **API Server**: Express + TypeScript (port 3001)
 - **MCP Server**: @modelcontextprotocol/sdk
-- **Storage**: JSON file (`data/todos.json`)
+- **Database**: Supabase (Postgres)
+- **Deployment**: Vercel (frontend) + Render (backend)
 
 ## Project Structure
 ```
 client/          # React frontend
 server/src/
   ├── api.ts     # REST API for React frontend
+  ├── db.ts      # Shared Supabase CRUD module
   └── index.ts   # MCP server for Claude
-data/            # Shared JSON storage
 ```
+
+## Environment Variables
+
+### Server (`server/.env`)
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_ANON_KEY` - Supabase anon/public key
+- `PORT` - API server port (default 3001)
+- `CORS_ORIGIN` - Allowed CORS origin (default `*`)
+
+### Client (`client/.env`)
+- `VITE_API_URL` - API base URL (default `http://localhost:3001/api`)
 
 ## Running the App
 ```bash
@@ -49,6 +61,18 @@ interface Todo {
   updatedAt: string;
 }
 ```
+
+## Scripts (`server/package.json`)
+- `npm start` - Run API server (production, for Render)
+- `npm run start:mcp` - Run MCP server
+- `npm run dev` - Run API server (dev, with tsx)
+- `npm run dev:mcp` - Run MCP server (dev)
+- `npm run build` - Compile TypeScript
+
+## Database
+- Supabase Postgres with RLS enabled
+- Table: `todos` (snake_case columns mapped to camelCase in `db.ts`)
+- Both `api.ts` and `index.ts` import CRUD from `db.ts` — never access Supabase directly
 
 ## Code Conventions
 - Use TypeScript strict mode
