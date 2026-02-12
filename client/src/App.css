@@ -74,3 +74,26 @@
   color: #6c7086;
   font-size: 16px;
 }
+
+@media (max-width: 600px) {
+  .header {
+    padding: 24px 16px 12px;
+  }
+
+  .header h1 {
+    font-size: 32px;
+  }
+
+  .main {
+    padding: 12px;
+  }
+
+  .filters {
+    margin: 16px 0;
+  }
+
+  .filters button {
+    padding: 8px 8px;
+    font-size: 13px;
+  }
+}

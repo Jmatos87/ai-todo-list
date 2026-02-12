@@ -171,3 +171,33 @@
 .add-todo-tag button:hover {
   color: #f38ba8;
 }
+
+@media (max-width: 600px) {
+  .add-todo-main {
+    flex-direction: column;
+  }
+
+  .add-todo-button {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .add-todo-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .add-todo-input {
+    font-size: 16px;
+  }
+
+  .add-todo-field select,
+  .add-todo-field input[type="date"] {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .add-todo-tag-input input {
+    font-size: 16px;
+  }
+}

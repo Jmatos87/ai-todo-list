@@ -101,3 +101,33 @@
 .todo-delete:hover {
   color: #f38ba8;
 }
+
+@media (max-width: 600px) {
+  .todo-item {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .todo-header {
+    flex-wrap: wrap;
+  }
+
+  .todo-title {
+    font-size: 15px;
+  }
+
+  .todo-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .todo-delete {
+    padding: 4px 12px;
+    font-size: 22px;
+  }
+
+  .todo-checkbox input {
+    width: 22px;
+    height: 22px;
+  }
+}
