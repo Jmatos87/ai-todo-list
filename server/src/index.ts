@@ -1,40 +1,19 @@
+import "dotenv/config";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { v4 as uuidv4 } from "uuid";
-import { readFileSync, writeFileSync, existsSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_FILE = join(__dirname, "../../data/todos.json");
-
-interface Todo {
-  id: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  priority: "low" | "medium" | "high";
-  dueDate?: string;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-function loadTodos(): Todo[] {
-  if (!existsSync(DATA_FILE)) {
-    return [];
-  }
-  const data = readFileSync(DATA_FILE, "utf-8");
-  return JSON.parse(data);
-}
-
-function saveTodos(todos: Todo[]): void {
-  writeFileSync(DATA_FILE, JSON.stringify(todos, null, 2));
-}
+import {
+  listTodos,
+  createTodo,
+  updateTodo,
+  deleteTodo,
+  completeTodo,
+  searchTodos,
+} from "./db.js";
+import type { Todo } from "./db.js";
 
 const server = new Server(
   {
@@ -191,145 +170,131 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
-  let todos = loadTodos();
 
-  switch (name) {
-    case "list_todos": {
-      let filtered = todos;
-      if (args?.completed !== undefined) {
-        filtered = filtered.filter((t) => t.completed === args.completed);
-      }
-      if (args?.priority) {
-        filtered = filtered.filter((t) => t.priority === args.priority);
-      }
-      if (args?.tag) {
-        filtered = filtered.filter((t) => t.tags.includes(args.tag as string));
-      }
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(filtered, null, 2),
-          },
-        ],
-      };
-    }
-
-    case "add_todo": {
-      const now = new Date().toISOString();
-      const newTodo: Todo = {
-        id: uuidv4(),
-        title: args?.title as string,
-        description: args?.description as string | undefined,
-        completed: false,
-        priority: (args?.priority as Todo["priority"]) || "medium",
-        dueDate: args?.dueDate as string | undefined,
-        tags: (args?.tags as string[]) || [],
-        createdAt: now,
-        updatedAt: now,
-      };
-      todos.push(newTodo);
-      saveTodos(todos);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Created todo: ${JSON.stringify(newTodo, null, 2)}`,
-          },
-        ],
-      };
-    }
-
-    case "update_todo": {
-      const index = todos.findIndex((t) => t.id === args?.id);
-      if (index === -1) {
+  try {
+    switch (name) {
+      case "list_todos": {
+        const todos = await listTodos({
+          completed: args?.completed as boolean | undefined,
+          priority: args?.priority as Todo["priority"] | undefined,
+          tag: args?.tag as string | undefined,
+        });
         return {
-          content: [{ type: "text", text: `Todo not found: ${args?.id}` }],
-          isError: true,
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(todos, null, 2),
+            },
+          ],
         };
       }
-      const todo = todos[index];
-      const updated: Todo = {
-        id: todo.id,
-        title: (args?.title as string) ?? todo.title,
-        description: args?.description !== undefined ? (args.description as string) : todo.description,
-        completed: args?.completed !== undefined ? (args.completed as boolean) : todo.completed,
-        priority: (args?.priority as Todo["priority"]) ?? todo.priority,
-        dueDate: args?.dueDate !== undefined ? (args.dueDate as string) : todo.dueDate,
-        tags: (args?.tags as string[]) ?? todo.tags,
-        createdAt: todo.createdAt,
-        updatedAt: new Date().toISOString(),
-      };
-      todos[index] = updated as Todo;
-      saveTodos(todos);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Updated todo: ${JSON.stringify(updated, null, 2)}`,
-          },
-        ],
-      };
-    }
 
-    case "delete_todo": {
-      const initialLength = todos.length;
-      todos = todos.filter((t) => t.id !== args?.id);
-      if (todos.length === initialLength) {
+      case "add_todo": {
+        const newTodo = await createTodo({
+          title: args?.title as string,
+          description: args?.description as string | undefined,
+          priority: args?.priority as Todo["priority"] | undefined,
+          dueDate: args?.dueDate as string | undefined,
+          tags: args?.tags as string[] | undefined,
+        });
         return {
-          content: [{ type: "text", text: `Todo not found: ${args?.id}` }],
-          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Created todo: ${JSON.stringify(newTodo, null, 2)}`,
+            },
+          ],
         };
       }
-      saveTodos(todos);
-      return {
-        content: [{ type: "text", text: `Deleted todo: ${args?.id}` }],
-      };
-    }
 
-    case "complete_todo": {
-      const index = todos.findIndex((t) => t.id === args?.id);
-      if (index === -1) {
+      case "update_todo": {
+        const id = args?.id as string;
+        const fields: Record<string, unknown> = {};
+        if (args?.title !== undefined) fields.title = args.title;
+        if (args?.description !== undefined) fields.description = args.description;
+        if (args?.completed !== undefined) fields.completed = args.completed;
+        if (args?.priority !== undefined) fields.priority = args.priority;
+        if (args?.dueDate !== undefined) fields.dueDate = args.dueDate;
+        if (args?.tags !== undefined) fields.tags = args.tags;
+
+        const updated = await updateTodo(id, fields);
+        if (!updated) {
+          return {
+            content: [{ type: "text", text: `Todo not found: ${id}` }],
+            isError: true,
+          };
+        }
         return {
-          content: [{ type: "text", text: `Todo not found: ${args?.id}` }],
-          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Updated todo: ${JSON.stringify(updated, null, 2)}`,
+            },
+          ],
         };
       }
-      todos[index].completed = true;
-      todos[index].updatedAt = new Date().toISOString();
-      saveTodos(todos);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Completed: ${todos[index].title}`,
-          },
-        ],
-      };
-    }
 
-    case "search_todos": {
-      const query = (args?.query as string).toLowerCase();
-      const results = todos.filter(
-        (t) =>
-          t.title.toLowerCase().includes(query) ||
-          t.description?.toLowerCase().includes(query)
-      );
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(results, null, 2),
-          },
-        ],
-      };
-    }
+      case "delete_todo": {
+        const id = args?.id as string;
+        const deleted = await deleteTodo(id);
+        if (!deleted) {
+          return {
+            content: [{ type: "text", text: `Todo not found: ${id}` }],
+            isError: true,
+          };
+        }
+        return {
+          content: [{ type: "text", text: `Deleted todo: ${id}` }],
+        };
+      }
 
-    default:
-      return {
-        content: [{ type: "text", text: `Unknown tool: ${name}` }],
-        isError: true,
-      };
+      case "complete_todo": {
+        const id = args?.id as string;
+        const completed = await completeTodo(id);
+        if (!completed) {
+          return {
+            content: [{ type: "text", text: `Todo not found: ${id}` }],
+            isError: true,
+          };
+        }
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Completed: ${completed.title}`,
+            },
+          ],
+        };
+      }
+
+      case "search_todos": {
+        const results = await searchTodos(args?.query as string);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(results, null, 2),
+            },
+          ],
+        };
+      }
+
+      default:
+        return {
+          content: [{ type: "text", text: `Unknown tool: ${name}` }],
+          isError: true,
+        };
+    }
+  } catch (err) {
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Error in ${name}: ${err instanceof Error ? err.message : String(err)}`,
+        },
+      ],
+      isError: true,
+    };
   }
 });
 

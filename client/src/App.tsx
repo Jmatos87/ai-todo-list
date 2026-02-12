@@ -4,7 +4,7 @@ import { TodoItem } from "./components/TodoItem";
 import { AddTodo } from "./components/AddTodo";
 import "./App.css";
 
-const API_URL = "http://localhost:3001/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
